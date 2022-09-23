@@ -28,7 +28,7 @@ const tours = JSON.parse(
     fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
 );
 
-// GET request for simple tour data
+// GET request for simple all tour data
 app.get('/api/v1/tours', (req, res) => {
     res
         .status(200)
@@ -42,6 +42,7 @@ app.get('/api/v1/tours', (req, res) => {
             });
  });
 
+//Get request for single tour data
 app.get('/api/v1/tours/:id', (req, res) => {
     console.log(req.params);
 
@@ -67,6 +68,7 @@ app.get('/api/v1/tours/:id', (req, res) => {
     )
 })
 
+// POST new tour
 app.post('/api/v1/tours', (req, res) => {
     const newId = tours[tours.length - 1].id + 1;
     const newTour = Object.assign({ id: newId }, req.body);
@@ -88,6 +90,28 @@ app.post('/api/v1/tours', (req, res) => {
     });
  }
 )
+
+// PATCH request (only updated properties are given, not the whole object)
+app.patch('/api/v1/tours/:id', (req, res) => {
+    if (req.params.id * 1 > tours.length) {
+        return res.status(404).json({
+            status: 'fail',
+            message: 'Invalid ID'
+        });
+    }
+    res.status(200).json({ status: 'success', data: { tour: '<Updated tour here>' } })
+});
+
+// DELETE request
+app.delete('/api/v1/tours/:id', (req, res) => {
+    if (req.params.id * 1 > tours.length) {
+        return res.status(404).json({
+            status: 'fail',
+            message: 'Invalid ID'
+        });
+    }
+    res.status(204).json({ status: 'success', data: null });
+});
 
 // Server Listener
 const port = 3000;
