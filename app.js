@@ -9,41 +9,27 @@ const app = express();
 // MIDDLEWARE
 app.use(express.json());
 
-// app.get('/', (req, res) => {
-//     res
-//         .status(200)
-//         .json(
-//             {
-//                 message: 'Hello from the server side!',
-//                 app: 'Natours'
-//             })
-// });
+app.use((req, res, next) => {
 
-// app.post('/', (req, res) => {
-//     res.send('You can post to this endpoint...');
-// });
+});
 
 // Simple tours data variable
 const tours = JSON.parse(
     fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
 );
 
-// GET request for simple all tour data
-app.get('/api/v1/tours', (req, res) => {
-    res
-        .status(200)
-        .json(
-            {
-                status: 'success',
-                results: tours.length,  // returns the number of results
-                data: {
-                    tours: tours
+//  ROUTE FUNCTIONS //
+const getAllTours = (req, res) => {
+    res.status(200).json({
+            status: 'success',
+            results: tours.length,
+            data: {
+                tours: tours
                 }
             });
- });
+ };
 
-//Get request for single tour data
-app.get('/api/v1/tours/:id', (req, res) => {
+const getTour = (req, res) => {
     console.log(req.params);
 
     const id = req.params.id * 1; //convert id to number
@@ -56,20 +42,15 @@ app.get('/api/v1/tours/:id', (req, res) => {
 
     const tour = tours.find(el => el.id === id); //find tour with id
 
-    res
-        .status(200)
-        .json(
-            {
+    res.status(200).json({
                 status: 'success',
                 data: {
                     tour: tour
                 }
-        }
-    )
-})
+            })
+};
 
-// POST new tour
-app.post('/api/v1/tours', (req, res) => {
+const createTour = (req, res) => {
     const newId = tours[tours.length - 1].id + 1;
     const newTour = Object.assign({ id: newId }, req.body);
 
@@ -79,20 +60,16 @@ app.post('/api/v1/tours', (req, res) => {
         `${__dirname}/dev-data/data/tours-simple.json`,
         JSON.stringify(tours),
         err => {
-            res
-                .status(201)
-                .json({
-                    status: 'success',
-                    data: {
-                        tour: newTour
-            }
-        })
-    });
- }
-)
+            res.status(201).json({
+                status: 'success',
+                data: {
+                    tour: newTour
+                }
+            });
+        });
+};
 
-// PATCH request (only updated properties are given, not the whole object)
-app.patch('/api/v1/tours/:id', (req, res) => {
+const updateTour = (req, res) => {
     if (req.params.id * 1 > tours.length) {
         return res.status(404).json({
             status: 'fail',
@@ -100,10 +77,9 @@ app.patch('/api/v1/tours/:id', (req, res) => {
         });
     }
     res.status(200).json({ status: 'success', data: { tour: '<Updated tour here>' } })
-});
+};
 
-// DELETE request
-app.delete('/api/v1/tours/:id', (req, res) => {
+const deleteTour = (req, res) => {
     if (req.params.id * 1 > tours.length) {
         return res.status(404).json({
             status: 'fail',
@@ -111,7 +87,26 @@ app.delete('/api/v1/tours/:id', (req, res) => {
         });
     }
     res.status(204).json({ status: 'success', data: null });
-});
+};
+
+
+// app.get('/api/v1/tours', getAllTours);
+// app.get('/api/v1/tours/:id', getTour);
+// app.post('/api/v1/tours', createTour);
+// app.patch('/api/v1/tours/:id', updateTour);
+// app.delete('/api/v1/tours/:id', deleteTour);
+
+// ROUTES //
+app
+    .route('/api/v1/tours')
+    .get(getAllTours)
+    .post(createTour);
+
+app
+    .route('/api/v1/tours/:id')
+    .get(getTour)
+    .patch(updateTour)
+    .delete(deleteTour);
 
 // Server Listener
 const port = 3000;
